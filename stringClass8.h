@@ -133,7 +133,8 @@ public:
 
   bool operator!=(const string8 &s) const { return !(operator==(s)); }
   bool operator!=(culong *s) const        { return !(operator==(s)); }
-  bool operator!=(cchar *s) const         { return !(operator==(s)); }
+  //  bool operator!=(cchar *s) const         { return !(operator==(s)); }
+  bool operator!=(char *s) const          { return !(operator==(s)); }
   bool operator!=(cushort *s) const       { return !(operator==(s)); }
   bool operator!=(culong c) const         { return !(operator==(c)); }
   
