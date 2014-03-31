@@ -117,8 +117,8 @@ public:
   string8 &operator-=(const int n);           /// clears n char(s) from string
   string8 operator-(int n) const;             /// returns a temp string that has n less chars
 
-  operator char*()   { return d; }            /// returns string
-  //operator const char*() { return d; }
+  //operator char*()   { return d; }            /// returns string
+  operator const char*() { return d; }
   operator ulong*()  { return convert32(); }  /// converts string to utf-32
   operator ushort*() { return convertWin(); } /// converts string to windows16bit
 
