@@ -1,7 +1,8 @@
-#include "pch.h"
-
-//#include "typeShortcuts.h"
-//#include "stringClass8.h"
+//#include "pch.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include "typeShortcuts.h"
+#include "stringClass8.h"
 
 
 /* UTF 8 research
