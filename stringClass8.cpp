@@ -1,4 +1,5 @@
-//#include "pch.h"
+#include "pch.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include "typeShortcuts.h"
