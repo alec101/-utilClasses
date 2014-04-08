@@ -128,6 +128,7 @@ public:
   bool operator==(const string8 &s) const;      /// checks if strings are identical
   bool operator==(const ulong *) const;         /// checks if strings are identical                     (utf-32)
   bool operator==(const char *s) const { return operator==(string8(s)); } /// checks if strings are identical (utf-8)
+  bool operator==(char *s) const { return operator==(string8(s)); }
   bool operator==(const ushort *) const;        /// checks if strings are identical (windows compatibility)
   bool operator==(const ulong) const;           /// string must be 1 char long (+terminator) and identical to input character
 
