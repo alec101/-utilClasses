@@ -73,14 +73,15 @@ public:
 // util funcs start with <str>/<utfx> so there's a clear delimitation
 // any number of funcs can be put here, i guess, as there are few utf-x specific functions anyways/or OS independant funcs
   
-  size_t strlen(const char *) const;          /// size in bytes
-  size_t strlenWin(const ushort *) const;     /// size in shorts (same as nr of chars) WINDOWS COMPATIBILITY
-  size_t strlen32(const ulong *) const;       /// size in longs  (same as nr of chars)
-  size_t strchars(const char *) const;        /// nr chars in an UTF-8 string (WITH combining diacriticals)
-  size_t strcombs(const char *) const;        /// nr combining diacriticals in an UTF-8 string
-  void strncpy(cchar* dst, cchar *src, uint); /// copies n chars from src to dst, 
-  ulong utf8to32(const char *) const;         /// returns character as utf-32
-  ulong utf8to32n(const char *, int) const;   /// returns n-th character as utf-32
+  static size_t strlen(const char *);          /// size in bytes
+  static size_t strlenWin(const ushort *);     /// size in shorts (same as nr of chars) WINDOWS COMPATIBILITY
+  static size_t strlen32(const ulong *);       /// size in longs  (same as nr of chars)
+  static size_t strchars(const char *);        /// nr chars in an UTF-8 string (WITH combining diacriticals)
+  static size_t strcombs(const char *);        /// nr combining diacriticals in an UTF-8 string
+  static void strncpy(cchar* dst, cchar *src, uint); /// copies n chars from src to dst, 
+  static ulong utf8to32(const char *);         /// returns character as utf-32
+  static ulong utf8to32n(const char *, int);   /// returns n-th character as utf-32
+  static size_t strcmp(cchar *, cchar *);      /// compares two strings, returns 0 if identical or <0 if str1 is less than str2, and viceversa
 
 // constructors
   

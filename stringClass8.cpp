@@ -742,6 +742,20 @@ ulong string8::utf8to32n(const char *s, int n) const {
 }
 
 
+size_t string8::strcmp(cchar *s1, cchar *s2) {
+  size_t l1= strlen(s1);
+  size_t l2= strlen(s2);
+  /// if sizes are the same, proceed to test each character
+  if(l1== l2) {
+    for(size_t a= 0; a< l1; a++)
+      if(s1[a]!= s2[a])
+        return -1;
+
+    return 0;
+  } else
+    /// sizes differ, return difference (if l1< l2, ret will be negative, and viceversa)
+    return l1- l2;
+}
 
 
 
