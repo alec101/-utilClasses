@@ -44,7 +44,7 @@
 
 class string8 {
 public:
-  char  *d;                  // main internal data storage 32bits  (if u mess with it, call updateLen() !!! )
+  char  *d;                  // main internal data storage UTF-8 format (if u mess with it, call updateLen() !!! )
   size_t len;                // size bytes (NOT NUMBER OF CHARACTERS! use strchars() )
   size_t nrchars;            // nr of characters in string (including diacriticals)
   
@@ -66,7 +66,7 @@ public:
   
 // combining diacritical characters
   
-  bool isComb(const ulong c) const;         /// is it a combining diacritical (if u dont know what they are, use clearComb() to remove them)
+  static bool isComb(const ulong c);         /// is it a combining diacritical (if u dont know what they are, use clearComb() to remove them)
   void clearComb();                         /// clears all combining diacritical characters from the string
 
 // utility functions, they won't AFFECT anything in string's internal data, or USE string internal data
@@ -127,9 +127,11 @@ public:
   ulong getChar(uint n) const;                /// returns n-th character in string as unicode
 
   bool operator==(const string8 &s) const;      /// checks if strings are identical
-  bool operator==(const ulong *) const;         /// checks if strings are identical                     (utf-32)
-  bool operator==(const char *s) const { return operator==(string8(s)); } /// checks if strings are identical (utf-8)
-  bool operator==(char *s) const { return operator==(string8(s)); }
+  bool operator==(const ulong *) const;         /// checks if strings are identical (utf-32)
+  // NEED SPECIAL OPERATOR FOR THESE, NO MEMORY ALLOCS!
+  // THESE SHOULD BE PRETTY FAST FUNCS, AS MANY STR COMPARES ARE DONE
+  bool operator==(const char *s) const;         /// checks if strings are identical (utf-8)
+  bool operator==(char *s) const;               /// checks if strings are identical (utf-8)
   bool operator==(const ushort *) const;        /// checks if strings are identical (windows compatibility)
   bool operator==(const ulong) const;           /// string must be 1 char long (+terminator) and identical to input character
 

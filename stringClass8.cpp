@@ -233,7 +233,7 @@ string8 &string8::operator=(const ushort *s) {
   if(!nrchars) return *this;
   
 /// length in bytes of d
-  for(size_t a= 0; a< nrchars; a++)	  // for each character in s
+  for(size_t a= 0; a< nrchars; a++)	 // for each character in s
     if(s[a]<=      0x007F) len++;   /// 1 byte  U-00000000�U-0000007F:  0xxxxxxx 
     else if(s[a]<= 0x07FF) len+= 2; /// 2 bytes U-00000080�U-000007FF:  110xxxxx 10xxxxxx 
     else if(s[a]<= 0xFFFF) len+= 3; /// 3 bytes U-00000800�U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx 
@@ -528,6 +528,33 @@ string8 string8::operator-(int n) const {
 // OPERATOR == //
 ///-----------///
 
+bool string8::operator==(const char *s) const {
+  if(!s) {
+    if(!len)  return true;
+    else      return false;
+  }
+
+  for(size_t a= 0; a< len; a++)
+    if(d[a]!= s[a])
+      return false;
+
+  return true;
+} /// checks if strings are identical (utf-8)
+
+bool string8::operator==(char *s) const {
+  if(!s) {
+    if(!len)  return true;
+    else      return false;
+  }
+
+  for(size_t a= 0; a< len; a++)
+    if(d[a]!= s[a])
+      return false;
+
+  return true;
+}
+
+
 bool string8::operator==(const string8 &s) const {
   if(s.len!= len) return false;
 
@@ -571,7 +598,7 @@ bool string8::operator==(culong c) const {
 // COMBining diacritical character functions //
 ///-----------------------------------------///
 
-bool string8::isComb(culong c) const {
+bool string8::isComb(culong c) {
 /// 0300-036F Combining Diacritical Marks, since version 1.0, with modifications in subsequent versions down to 4.1
   if( (c>= 0x0300)&& (c<= 0x036f) ) return true;
 /// 1DC0-1DFF Combining Diacritical Marks Supplement, versions 4.1 to 5.2
@@ -619,28 +646,28 @@ void string8::updateLen() {
 }
 
 /// returns string length in bytes
-size_t string8::strlen(const char *s) const {
+size_t string8::strlen(const char *s) {
   const char *p= s;
   while(*p++);
   return p- s- 1;
 }
 
 /// returns string length (with all combined chars) for a 32bit string
-size_t string8::strlen32(const ulong *s) const {
+size_t string8::strlen32(const ulong *s) {
   const ulong *p= s;
   while(*p++);
   return p- s- 1;
 }
 
 /// returns string length for a 16bit string (windows compatibility) NOT UTF-16
-size_t string8::strlenWin(const ushort *s) const {
+size_t string8::strlenWin(const ushort *s) {
   const ushort *p= s;
   while(*p++);
   return p- s- 1;
 }
 
 // counts the number of characters in a utf-8 string8 (totals - both chars and combs)
-size_t string8::strchars(const char *s) const {
+size_t string8::strchars(const char *s) {
   const uchar *p= (const uchar *)s;
   size_t l= 0;
   
@@ -652,7 +679,7 @@ size_t string8::strchars(const char *s) const {
 }
 
 // returns number of combined diacriticals in a utf-8 string
-size_t string8::strcombs(cchar *s) const {
+size_t string8::strcombs(cchar *s) {
   size_t ret= 0;
   cuchar *p= (cuchar *)s;
   ulong a;
@@ -697,7 +724,7 @@ size_t string8::strcombs(cchar *s) const {
 }
 
 
-ulong string8::utf8to32(const char *s) const {
+ulong string8::utf8to32(const char *s) {
   cuchar *p= (cuchar*)s;
   ulong ret= 0;
 
@@ -731,7 +758,7 @@ ulong string8::utf8to32(const char *s) const {
 
 
 /// gets n-th char in string8 s (format is utf-8)
-ulong string8::utf8to32n(const char *s, int n) const {
+ulong string8::utf8to32n(const char *s, int n) {
   cuchar *p= (cuchar*)s;
 /// pass thru all characters, till n is reached
   for(size_t a= 0; a< n;)
