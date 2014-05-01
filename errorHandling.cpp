@@ -1,6 +1,4 @@
-#include "pch.h"     // <--- if using precompiled
-
-#ifdef OS_WIN                       // <--- if not using precompiled
+#ifdef OS_WIN                 // <--- if not using precompiled
 #include <windows.h>
 #endif /// OS_WIN
 
@@ -13,7 +11,7 @@
 #include <stdarg.h>
 
 #include "typeShortcuts.h"
-#include "stringClass32.h"
+#include "stringClass8.h"
 #include "errorHandling.h"    // <--- ^^^
 
 

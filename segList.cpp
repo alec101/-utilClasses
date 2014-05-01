@@ -1,6 +1,19 @@
-#include "pch.h"			// this one
-//#include <sys/time.h>
-//#include "segList.h"		// or this
+#ifdef OS_WIN
+#include <Windows.h>
+#endif /// OS_WIN
+
+#ifdef OS_LINUX
+#include <time.h>
+#endif /// OS_LINUX
+
+#ifdef OS_MAC
+#include <mach/mach.h>                  // high resolution clock funcs
+#include <mach/mach_time.h>             // high resolution clock funcs
+#endif /// OS_MAC
+
+#include "typeShortcuts.h"
+#include "chainList.h"
+#include "segList.h"
 
 
 // !!!!!!!!!!!

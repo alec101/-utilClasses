@@ -1,7 +1,6 @@
-#include "pch.h"			//this
-//#include "chainlist.h"		//or this
-
-
+#include <stdio.h>
+#include "typeShortcuts.h"
+#include "chainlist.h"
 //#define CHAINLIST_SAFECHECKS 1 //to check for bad calls to chainList
 
 ///---------------///

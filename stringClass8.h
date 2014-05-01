@@ -128,8 +128,6 @@ public:
 
   bool operator==(const string8 &s) const;      /// checks if strings are identical
   bool operator==(const ulong *) const;         /// checks if strings are identical (utf-32)
-  // NEED SPECIAL OPERATOR FOR THESE, NO MEMORY ALLOCS!
-  // THESE SHOULD BE PRETTY FAST FUNCS, AS MANY STR COMPARES ARE DONE
   bool operator==(const char *s) const;         /// checks if strings are identical (utf-8)
   bool operator==(char *s) const;               /// checks if strings are identical (utf-8)
   bool operator==(const ushort *) const;        /// checks if strings are identical (windows compatibility)

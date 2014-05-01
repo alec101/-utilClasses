@@ -1,7 +1,6 @@
-#include "pch.h"
-
-//#include "typeShortcuts.h"
-//#include "stringClass32.h"
+#include <stdio.h>
+#include "typeShortcuts.h"
+#include "stringClass32.h"
 
 
 /* UTF 8 research
