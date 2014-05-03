@@ -1,12 +1,15 @@
-#ifdef OS_WIN
+#ifdef _WIN32
+#define OS_WIN
 #include <Windows.h>
 #endif /// OS_WIN
 
-#ifdef OS_LINUX
+#ifdef __linux__
+#define OS_LINUX
 #include <time.h>
 #endif /// OS_LINUX
 
-#ifdef OS_MAC
+#ifdef __APPLE__
+#define OS_MAC
 #include <mach/mach.h>                  // high resolution clock funcs
 #include <mach/mach_time.h>             // high resolution clock funcs
 #endif /// OS_MAC

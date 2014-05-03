@@ -1,8 +1,15 @@
-#ifdef OS_WIN                 // <--- if not using precompiled
+#ifdef _WIN32                 // <--- if not using precompiled
 #include <windows.h>
+
+#define USING_DIRECTINPUT     // << DISABLE / ENABLE
+
+#ifdef USING_DIRECTINPUT
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#endif
 #endif /// OS_WIN
 
-#ifdef OS_LINUX
+#ifdef __linux__
 #include <X11/Xlib.h>
 #endif /// OS_LINUX
 
@@ -15,9 +22,9 @@
 #include "errorHandling.h"    // <--- ^^^
 
 
-#ifdef USING_CONSOLE
+#ifdef USING_CONSOLE          // project defined
 #include "Console.h"
-extern Console console;	// must be declared in main program, if used
+extern Console console;
 #endif
 
 
@@ -205,7 +212,7 @@ void ErrorHandling::messageBox(string8 text) {
 
 #ifdef USING_DIRECTINPUT
 void ErrorHandling::dinput(long n) {
-  string s;
+  string8 s;
   switch(n) {
     case S_FALSE:                   { s= "S_FALSE: DI_BUFFEROVERFLOW: The device buffer overflowed and some input was lost.\nDI_NOEFFECT: The operation had no effect.\nDI_NOTATTACHED: The device exists but is not currently attached to the user's computer.\nDI_PROPNOEFFECT: The change in device properties had no effect."; break; }
     case DI_DOWNLOADSKIPPED:        { s= "DI_DOWNLOADSKIPPED: The parameters of the effect were successfully updated,\nbut the effect could not be downloaded because the associated device\nwas not acquired in exclusive mode."; break; }

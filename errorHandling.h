@@ -19,6 +19,7 @@ USAGE ==========================================================================
 //OPEN GL SPECIFIC ERRORZ:
 //glErrNr-GL_INVALID_ENUM+GLENUM
 
+
 class ErrorHandling {
   #ifdef OS_LINUX
   void messageBox(string8 text);   // linux specific messageBox window
