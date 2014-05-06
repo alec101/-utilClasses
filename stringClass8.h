@@ -103,7 +103,10 @@ public:
   string8 &operator= (const char *);       /// assign from a utf-8 simple string
   string8 &operator= (const ulong *);      /// assign from a utf-32 array (bassicaly what is used internally)
   string8 &operator= (const ushort *);     /// assign from a 16bit character simple string	(windows compatibility, shouldn't exist)
-  string8 &operator= (const ulong);        /// makes a 1 legth string of input char (+terminator)
+
+  // needs more testing v
+  string8 &operator= (const ulong);        /// makes a 1 char length string of input char (+terminator)
+  // needs more testing ^
 
   string8 operator+(const string8 &s) const { return string8(*this)+= s; } /// return a temp string (this+other)
   string8 operator+(const char *s) const    { return string8(*this)+= s; } /// return a temp string (this+other)
