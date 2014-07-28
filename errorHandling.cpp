@@ -1,7 +1,12 @@
-#ifdef _WIN32                 // <--- if not using precompiled
+
+
+#ifdef _WIN32
+#define OS_WIN
+#define USING_DIRECTINPUT
 #include <windows.h>
 
-#define USING_DIRECTINPUT     // << DISABLE / ENABLE
+//#define USING_DIRECTINPUT     // << DISABLE / ENABLE
+
 
 #ifdef USING_DIRECTINPUT
 #define DIRECTINPUT_VERSION 0x0800
@@ -10,8 +15,20 @@
 #endif /// OS_WIN
 
 #ifdef __linux__
+#define OS_LINUX
 #include <X11/Xlib.h>
 #endif /// OS_LINUX
+
+#define USING_OPENGL
+#ifdef USING_OPENGL
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else /// OS_WIN + OS_LINUX
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif 
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +36,7 @@
 
 #include "typeShortcuts.h"
 #include "stringClass8.h"
-#include "errorHandling.h"    // <--- ^^^
+#include "errorHandling.h"
 
 
 #ifdef USING_CONSOLE          // project defined
@@ -102,6 +119,7 @@ void ErrorHandling::window(string8 txt, bool exit, void (*exitFunc)(void)) {
 
 
 #ifdef OS_MAC
+  MUST MAKE THIS
   //return;
 #endif ///OS_MAC
   printf("no OS defined\n");
@@ -266,6 +284,35 @@ void ErrorHandling::dinput(long n) {
   simple(s);
 }
 #endif /// USING_DIRECTINPUT
+
+
+
+#ifdef USING_OPENGL
+int ErrorHandling::glError(cchar *text) {
+  int ret= glGetError();
+  if(!ret) return 0;        // fast return if no error
+
+  if(ret== GL_INVALID_ENUM)
+    simple(text? string8(text)+ " GL ERROR: GL_INVALID_ENUM": "OpenGL ERROR: GL_INVALID_ENUM");
+  else if(ret== GL_INVALID_VALUE)
+    simple(text? string8(text)+ " GL ERROR: GL_INVALID_VALUE": "OpenGL ERROR: GL_INVALID_VALUE");
+  else if(ret== GL_INVALID_OPERATION)
+    simple(text? string8(text)+ " GL ERROR: GL_INVALID_OPERATION": "OpenGL ERROR: GL_INVALID_OPERATION");
+  else if(ret== GL_OUT_OF_MEMORY)
+    simple(text? string8(text)+ " GL ERROR: GL_OUT_OF_MEMORY": "OpenGL ERROR: GL_OUT_OF_MEMORY");
+  else if(ret== GL_STACK_UNDERFLOW)
+    simple(text? string8(text)+ " GL ERROR: GL_STACK_UNDERFLOW": "OpenGL ERROR: GL_STACK_UNDERFLOW");
+  else if(ret== GL_STACK_OVERFLOW)
+    simple(text? string8(text)+ " GL ERROR: GL_STACK_OVERFLOW": "OpenGL ERROR: GL_STACK_OVERFLOW");
+
+  return ret;  
+}
+#endif /// USING_OPENGL
+
+
+
+
+
 
 
 

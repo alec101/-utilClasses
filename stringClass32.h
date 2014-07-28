@@ -1,6 +1,7 @@
 #pragma once
 #define STRINGCLASS32INCLUDED 1
 
+
 // WARNING:
 // -if you manually mess with d/d8/d16 (internal data), use updateLen(), to update
 //  the <len> var, as it is used internally string assumes <len> variable has the
@@ -8,7 +9,7 @@
 //  (SPEED is favoured)
 
 // -this class is not using any c/c++ string function. At this moment with the windows/linux war...
-//  setting locale& other stuff is just not possible as everithing differs.
+//  setting locale& other stuff is just not possible as everything differs.
 
 // -fopen knows of utf-8 but the win version wants to put a frakin BOM in the file,
 //  wich cause problems in linux, so a file should be opened as pure binary (at
@@ -37,7 +38,7 @@ class string8;
 #endif
 
 class string32 {
-// internal - if the string was changed, these vars are set to true, so the convert functions are called if needed
+  // internal - if the string was changed, these vars are set to true, so the convert functions are called if needed
   bool modif8;            /// internal flag: if the string is modified, d8[] needs to be recreated (in case it is used
   bool modif16;           /// internal flag: if the string is modified, d16[] needs to be recreated (in case it is used)
 
@@ -45,34 +46,33 @@ public:
   ulong  *d;                  // main internal data storage 32bits  (if u mess with it, call updateLen() !!! )
   size_t len;                 // characters + combining diacriticals
 
-/// conversion to other strings. data is kept! (use clean() to remove them manually)
+  /// conversion to other strings. data is kept! (use clean() to remove them manually)
 
   char   *d8;                 /// secondary utf-8 bit data storage  (if u mess with it, call updateLen() !!! )
   ushort *d16;                /// secondary 16 bit data storage     (if u mess with it, call updateLen() !!! )
 
-// main functions
+  // main functions
 
   void updateLen();           /// updates len variable, in case you want to mess with the string internal data (d/d8/etc). [WARNING: see start of this header file]
 
   char *convert8();           /// makes d8 if necessary then returns it;
   ushort *convert16();        /// makes d16 if neccessary then returns it
 
-// UTF8 functions. These are SECURE functions. Read & validate each character
+  // UTF8 functions. These are SECURE functions. Read & validate each character
 
   string32 &secureUTF8(const char *); // reading from UNSAFE SOURCES / FILES / INPUT is NOT SAFE. use secureUTF8() to validate a utf8 string
   void readUTF8(FILE *);             /// read all (remaining) file       (SECURE)
   void readUTF8n(FILE *, size_t);    /// read n characters from file     (SECURE)
   void readLineUTF8(FILE *);         /// read till end of line (or file) (SECURE)
 
-
-// combining diacritical characters
+  // combining diacritical characters
 
   bool isComb(const ulong c) const;         /// is it a combining diacritical (if u dont know what they are, use clearComb() to remove them)
   void clearComb();                         /// clears all combining diacritical characters from the string
 
-// utility functions, they won't AFFECT anything in string's internal data, or USE string internal data
-// util funcs start with <str>/<utfx> so there's a clear delimitation
-// any number of funcs can be put here, i guess, as there are few utf-x specific functions anyways/or OS independant funcs
+  // utility functions, they won't AFFECT anything in string's internal data, or USE string internal data
+  // util funcs start with <str>/<utfx> so there's a clear delimitation
+  // any number of funcs can be put here, i guess, as there are few utf-x specific functions anyways/or OS independant funcs
 
   size_t strlen(const ulong *) const;       /// size in longs  (same as nr of chars)
   size_t strlen16(const ushort *) const;    /// size in shorts (same as nr of chars)
@@ -84,7 +84,8 @@ public:
   ulong utf8to32(const char *) const;       /// returns character as utf-32
   ulong utf8to32n(const char *, int) const; /// returns n-th character as utf-32
 
-// constructors
+  // constructors
+
   string32();                                   // main constructor
   string32(const string32 &s):modif8(false), modif16(false), d(null), len(0), d8(null), d16(null) { *this= s; } // main constructor
   string32(const ulong *s):   modif8(false), modif16(false), d(null), len(0), d8(null), d16(null) { *this= s; } // main constructor
@@ -92,12 +93,14 @@ public:
   string32(const char *s):    modif8(false), modif16(false), d(null), len(0), d8(null), d16(null) { *this= s; } /// converts from utf-8 string
   string32(const ulong c):    modif8(false), modif16(false), d(null), len(0), d8(null), d16(null) { *this= c; } /// makes 1 char length string + terminator
 
-// destructor / cleaners
+  // destructor / cleaners
+
   ~string32();
   void delData();                         /// called by destructor, can be used to clean the string
   void clean();                           /// clears everything but d (deallocs d8/d16)
 
-//operators
+  //operators
+
   string32 &operator= (const string32 &);   /// assign other string, same as constructor, dunno if it is needed
   string32 &operator= (const ulong *);      /// assign from a utf-32 array (bassicaly what is used internally)
   string32 &operator= (const char *);       /// assign from a utf-8 simple string
@@ -143,12 +146,12 @@ public:
 
   bool operator!() { return len? true: false; };
 
-#ifdef STRINGCLASS8INCLUDED
+  #ifdef STRINGCLASS8INCLUDED
   string32(const string8 &s):modif8(false), modif16(false), d(null), len(0), d8(null), d16(null) { *this= s.d; }
   string32 &operator= (const string8 &s) { return *this= s.d; }
   string32 operator+(const string8 &s) const { return string32(*this)+= s.d; }
   string32 &operator+=(const string8 &s) { return *this+= s.d; }
-#endif /// STRINGCLASS8INCLUDED
+  #endif /// STRINGCLASS8INCLUDED
 };
 
 

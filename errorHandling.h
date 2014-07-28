@@ -19,9 +19,10 @@ USAGE ==========================================================================
 //OPEN GL SPECIFIC ERRORZ:
 //glErrNr-GL_INVALID_ENUM+GLENUM
 
+#define USING_OPENGL
 
 class ErrorHandling {
-  #ifdef OS_LINUX
+  #ifdef __linux__
   void messageBox(string8 text);   // linux specific messageBox window
   #endif /// OS_LINUX
     
@@ -42,6 +43,11 @@ public:
   void dinput(long nr);   // direct input error nr as text (msgbox etc)
   #endif
   
+  #ifdef USING_OPENGL
+  inline void glFlushErrors() { if(glGetError()) while(glGetError()); }
+  int glError(cchar *text= null);     /// returns the error nr or 0, and prints with simple() func the error, IF there is one; text is used for additional text to print
+  #endif /// OPENGL
+
   ErrorHandling();
   ~ErrorHandling();
   void delData();

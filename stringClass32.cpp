@@ -1,3 +1,9 @@
+#ifdef _WIN32
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#endif
+
 #include <stdio.h>
 #include "typeShortcuts.h"
 #include "stringClass32.h"
@@ -75,7 +81,6 @@
 }
 
 */
-
 
 
 string32::string32():
@@ -695,7 +700,7 @@ ulong string32::utf8to32(const char *s) const {
 ulong string32::utf8to32n(const char *s, int n) const {
   cuchar *p= (cuchar*)s;
 /// pass thru all characters, till n is reached
-  for(size_t a= 0; a< n;)
+  for(int a= 0; a< n;)
     if((*p++ & 0xc0)!= 0x80)
       a++;
 
