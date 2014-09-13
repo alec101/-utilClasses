@@ -1,39 +1,55 @@
 #pragma once
 //#define CHAINLIST_SAFECHECKS 1 //to check for bad calls to chainList
 
-// memory alloc is automatic, everything you need to think about is the segment size. it must be right, so not too many allocs happen
-// segList( segment size, sizeof(segData derived class));
+// ADVANTAGES:    -few to no memory allocs/deallocs (should be a huge boost in speed)
+// DISADVANTAGES: -additional memory space for each unit - [2* sizeof(void*)] per unit - not a big hit 
+//                  (32bytes total memory for one node: *prev, *next, *seglistSpecial, *segment - on a 64bit system)
 
-// you can call checkIdle() from time to time, to auto deallocate memory of idle segments
-// set timeMaxIdle (milisecs) to a desired idle time (default is 5 mins) after wich a segment is deallocated
-// a forced dealloc can happen with timeMaxIdle set to 0 or very low, and call checkIdle() 2 times(first time will mark empty segments- second pass will erase marked)
+
+// SEGLIST CREATION: segList( 'segment size', sizeof('segData derived class'));
+
+/// Memory alloc is automatic, everything you need to think about is the segment size (number of chainList nodes that are allocated per segment);
+///   it must be right, so not too many allocs happen
+
+/// You can call checkIdle() from time to time, to auto deallocate memory of idle segments
+/// Set timeMaxIdle (milisecs) to a desired idle time (default is 5 mins) after wich a segment is deallocated
+
+// FUNCTIONS THAT WILL WORK ON ALL CREATED segList's:
+/// call segList::checkIdleALL() to check ALL CREATED LISTS for idle segments that can be deallocated
+/// call segList::delEmptySegmentsALL() to force dealloc ALL CREATED LISTS unused segments
+
 
 
 // TODO:  i think there is a posibility to auto-know the derived class size, so the constructor will only need to know a segment size ( and not a unit size )
 
 
 class segList;
-class segment;
+class _segment;
 
-/// DERIVE classes from this one & DEFINE what vars are in the chain (node/blabla)
+
+// DERIVE classes from this one & DEFINE what vars are in the chain (node/blabla)
 class segData {
   friend class segList;
-  int segment;
+  _segment *seg;
 public:
   segData *next, *prev;
 
-/// there are no virtual constructors / will not be called by derived class... big source of errors
-  virtual ~segData();			/// being virtual, it seems delete[] knows to dealloc the derived parts... it never crashed/ no garbage remains in memory
+  // there are no virtual constructors / base constructor will not be called by derived class...
+  // this is big source of errors, therefore, just do not create a constructor
+  virtual ~segData() {};    /// being virtual, it seems delete[] knows to dealloc the derived parts... it never crashed/ no garbage remains in memory
 };
 
 
-// ------------------================= SEGLIST CLASS ====================------------------
 
-// manipulator class, just make a variable from this one
+// ------------------================= SEGLIST CLASS ====================------------------
+///========================================================================================
+
+// 'handler' class, just make a variable from this one
 class segList {
   friend class segData;
 
-// memory alloc private vars, nothing to bother
+  // memory alloc private vars, nothing to bother
+
   int unitSize;                 /// each segData (derived class) size
   int segSize;                  /// segment size
   chainList seg;                /// chainlist with all segments of memory allocated / memory alloc is automatic, nothing to bother
@@ -41,41 +57,61 @@ class segList {
   inline void removeSegment();  /// memory deallocation
 
 public:
-  segData *first, *last;      // last is important for add(), else there has to be a loop that passes thru all the list (if the list has 100k nodes... goodbye speed)
-  int nrNodes;                  /// nr nodes in list
+  segData *first, *last;     // last is important for add(), else there has to be a loop that passes thru all the list (if the list has 100k nodes... goodbye speed)
+  int nrNodes;               // VERY USEFULL - nr nodes in list
   
-// fast funcs
-  segData *add();               // returns pointer to the space allocated (it really allocs mem IF the segment allocated is full)
-  segData *addFirst();          // adds the node to the front of the list not the back (makes it first)
-  void del(segData *);          // NO searches involved - VERY FAST
+  // fast funcs
 
-// idle time check func
-  void checkIdle();             // call this func RARELY to check for idle memory segments that need to dealocate
-  int timeMaxIdle;              /// miliseconds: idle time after wich a segment is dealocated default is 5 mins. A FORCE DEALLOC CAN HAPPEN: make this var very low, and call checkIdle() 2 times, put 5 mins back or watever
+  segData *add();            // [FAST] returns pointer to the space allocated (it allocs mem only when no segment has free space)
+  segData *addFirst();       // [FAST] adds the node to the front of the list not the back (makes it first)
+  void del(segData *);       // [FAST] remove specified node - NO searches involved
+  
+  // slow funcs
 
-// slow funcs
-  void deli(int);               /// searches involved good to have - SLOW
-  segData *get(int);            /// searches involved - SLOW
-  int search(segData *);        /// returns -1 if failed to find; SLOW
+  void deli(int);           /// [SLOW] removes specified node number - good to have but searches are involved
+  segData *get(int);        /// [SLOW] returns node with specified number - searches involved
+  int search(segData *);    /// [SLOW] returns number ID of the specified node or -1 if failed to find
+  
+  // idle time check func
+
+  uint timeMaxIdle;         /// miliseconds: idle time after wich an empty segment is dealocated - default is 5 mins
+  void checkIdle();          // [SLOW] call this func RARELY to check for idle memory segments that need to dealocate
+  void delEmptySegments();   // [SLOW] forced delete of all segments that are not used
+
+  // funcs that will work for _ALL_ created segments; (there is a hidden chainList with all created segments)
+
+  static void checkIdleALL();       // [VERY SLOW] this is like checkIdle, but for ALL segments that were created; 
+  static void delEmptySegmentsALL();// [VERY SLOW] same as delEmptySegments() but for ALL segLists that were created; basically a garbage collector
+
+  // constructor / destructor
 
   segList(int segmentSize, int uSize, int idleTime= 300000);  // initialize by providing a segment size, and a sizeof(derived segData)
   ~segList();
-  void delData();               /// teh real destructor (tm)
+  void delData();           /// teh real destructor (tm) - can be called at any time to dealloc everything (removes EVERYTHING tho)
 };
 
 
-// internal allocation / deallocation segment list, nothing to bother here
-class segment: protected chainData {
+
+
+
+
+
+
+
+// INTERNAL STUFF - nothing to bother here
+
+/// allocation / deallocation segment list
+class _segment: protected chainData {
 friend class segList;
   void *data;       /// actual memory allocated
   
   void **freeSpc;   /// list with all free spaces in segment ( unitSize* segSize total space)
   int freeSpcPeak;  /// peak of freeSpc. acts like some kind of stack: u pick a free space from the top/ u put the space taken back
 
-  int timeIdle;     /// if 0, segment is in use. Else it holds the time @ start idling (used internally by segList::checkIdle())
+  uint timeIdle;    /// if 0, segment is in use. Else it holds the time @ start idling (used internally by segList::checkIdle())
 
-  segment();
-  ~segment();
+  _segment();
+  ~_segment();
 };
 
 

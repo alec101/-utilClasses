@@ -14,21 +14,31 @@ public:
 /// manipulator class, no derives necesary, just make a var from this one
 class chainList {
 public:
-  chainData *first, *last;    // last e important pt add(), altfel trebe un while care sa treaca prin toata lista (daca e lista de 1000000?)
-  int nrNodes;                // it's not good to modify the variable type (_dunno why what i was thinking 11.jan.2014_) better to create a special int64 class or, if needed
+  chainData *first, *last;     // last is important for add(), else there has to be a passthru till the last member (if the list is 100k long?)
+  int nrNodes;                 // VERY USEFULL - number of nodes in list
 
-  void add(chainData *);      // alloc mem, then pass pointer to add(). _better/faster function_
-  void addFirst(chainData *); // adds the node to the front of the list not the back (makes it first)
-  void del(chainData *);      // NO searches involved - VERY FAST
-  void deli(int);             /// searches involved - SLOW - good to have tho
+  // fast funcs
 
-  chainData *get(int);        /// searches involved - SLOW
-  int search(chainData *);    /// returns -1 if failed to find; nu e rapida - la 50000 iteme, vor fi tot atatea instructiuni minim
+  void add(chainData *);       // [FAST] alloc mem, then pass pointer to add(). fast function, no searches involved
+  void addFirst(chainData *);  // [FAST] adds the node to the front of the list not the back (makes it first)
+  void del(chainData *);       // [FAST] deletes specified chainList - NO searches involved
+  
+  // slow funcs
+
+  void deli(int);             /// [SLOW] dels specified item number - searches involved - SLOW for large lists 
+  chainData *get(int);        /// [SLOW] returns specified item number - searches involved - SLOW for large lists
+  int search(chainData *);    /// [SLOW] returns -1 if failed to find - SLOW for large lists
+
+  // constructor / destructor
 
   chainList();
   ~chainList();
-  void delData();             // teh real destructor (tm)
+  void delData();              // teh real destructor (tm) - can be called at any time to dealloc everything
 };
+
+
+
+
 
 
 

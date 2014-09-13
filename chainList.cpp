@@ -1,7 +1,6 @@
-#include "pch.h"			//this
-//#include "chainlist.h"		//or this
-
-
+#include <stdio.h>
+#include "typeShortcuts.h"
+#include "chainlist.h"
 //#define CHAINLIST_SAFECHECKS 1 //to check for bad calls to chainList
 
 ///---------------///
@@ -28,30 +27,20 @@ chainList::~chainList() {
 }
 
 void chainList::delData() {
-  if(first) {
-    chainData *p;
-    while(first) {
-      p= first;
-      first= first->next;
-      delete p;
-    }
-  }
-  first= null;
-  last= null;
-  nrNodes= 0;
+  while(first)
+    del(first);
 }
 
 // must alloc from code, then call this func.
 ///------------------------------------------
 
 void chainList::add(chainData *p2) {		
-  chainData *p= last;
-
-  if(p) {                 // list has members
-    p->next= p2;
-    p2->prev= p;
+  if(last) {              /// list has members
+    last->next= p2;
+    p2->prev= last;
+    p2->next= null;       /// do not depend on the constructor! it wont be called in the derived class! ...nice source of errors
     last= p2;
-  } else {                // list is empty
+  } else {                /// list is empty
     first= last= p2;
     p2->next= null;       /// do not depend on the constructor! it wont be called in the derived class! ...nice source of errors
     p2->prev= null;       /// this is the place to initialize these vars
@@ -78,42 +67,42 @@ void chainList::addFirst(chainData *p2) {
 
 // fast - few instructions - NO SEARCHES / PASSTHRUs
 void chainList::del(chainData *p) {
-#ifdef CHAINLIST_SAFECHECKS
+  #ifdef CHAINLIST_SAFECHECKS
   if((!nrNodes) || (!p)) {
-    AfxMessageBox("strange error in chainList::delNode(chainData *)");
+    //AfxMessageBox("strange error in chainList::delNode(chainData *)");
     return;
   }
-#endif
+  #endif
 
-/// make the links next/prev
+  /// make the links next/prev
   if(p->prev) p->prev->next= p->next;
   if(p->next) p->next->prev= p->prev;
   if(p== first) first= p->next;
   if(p== last) last= p->prev;
-/// delete
+  /// delete
   delete p;
   nrNodes--;
 }
 
 // slow - goes thru the list, with many instructions per cicle
 void chainList::deli(int nr) {
-#ifdef CHAINLIST_SAFECHECKS
+  #ifdef CHAINLIST_SAFECHECKS
   if(!nrNodes) return;
   if(nr> nrNodes) return;
-#endif
-
-/// find the item to be deleted
+  #endif
+  
+  /// find the item to be deleted
   chainData *p= first;
-  for(int a= 0; a< nr; a++)
+  for(int a= 0; a< nr; a++)       // <<< SLOW PART >>>
     p= p->next;
 
-/// make the next/prev links
+  /// make the next/prev links
   if(p->prev) p->prev->next= p->next;
   if(p->next) p->next->prev= p->prev;
   if(p== first) first= p->next;
   if(p== last) last= p->prev;
 
-/// delete
+  /// delete
   delete p;
   nrNodes--;
 }
@@ -125,13 +114,13 @@ void chainList::deli(int nr) {
 
 // get must be used rarely: if there's a for() {get()} it will pass n*n times thru list. if the list is 100000 items long... do the math... MANY zeroes of instructions...
 chainData *chainList::get(int nr) {
-#ifdef CHAINLIST_SAFECHECKS
+  #ifdef CHAINLIST_SAFECHECKS
   if(!nrNodes) return null;
   if(nr> nrNodes) return null;
-#endif
-
+  #endif
+  
   chainData *p= first;
-  for(int a= 0; a< nr; a++)
+  for(int a= 0; a< nr; a++)                   // <<< SLOW PART >>>
     p= p->next;
 
   return p;
@@ -140,7 +129,7 @@ chainData *chainList::get(int nr) {
 // same as get, use RARELY
 int chainList::search(chainData *e) {
   chainData *p= first;
-  for(int a= 0; a< nrNodes; a++, p= p->next)
+  for(int a= 0; a< nrNodes; a++, p= p->next)  // <<< SLOW PART >>>
     if(p== e) return a;
 
   return -1;

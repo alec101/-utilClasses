@@ -1,6 +1,22 @@
-#include "pch.h"			// this one
-//#include <sys/time.h>
-//#include "segList.h"		// or this
+#ifdef _WIN32
+#define OS_WIN
+#include <Windows.h>
+#endif /// OS_WIN
+
+#ifdef __linux__
+#define OS_LINUX
+#include <time.h>
+#endif /// OS_LINUX
+
+#ifdef __APPLE__
+#define OS_MAC
+#include <mach/mach.h>                  // high resolution clock funcs
+#include <mach/mach_time.h>             // high resolution clock funcs
+#endif /// OS_MAC
+
+#include "typeShortcuts.h"
+#include "chainList.h"
+#include "segList.h"
 
 
 // !!!!!!!!!!!
@@ -9,18 +25,12 @@
 
 //#define CHAINLIST_SAFECHECKS 1 //to check for bad calls to chainList
 
-///-------------///
-// segData class //
-///-------------///
 
-segData::~segData() {
-}
+///--------------///
+// _segment class //
+///--------------///
 
-///-------------///
-// segment class //
-///-------------///
-
-segment::segment() {
+_segment::_segment() {
   next= prev= null;
   data= null;
   freeSpc= null;
@@ -28,7 +38,8 @@ segment::segment() {
   timeIdle= 0;					/// 0= segment in use
 }
 
-segment::~segment() {
+
+_segment::~_segment() {
   if(data)
     delete[] data;
   if(freeSpc)
@@ -36,9 +47,19 @@ segment::~segment() {
 }
 
 
+
 ///-------------///
 // segList class //
 ///-------------///
+
+// hidden chainList with all created segLists; used for actions on all lists
+class _ALLsegsData:public chainData {
+public:
+  segList *list;
+};
+chainList _ALLsegs;
+
+
 
 segList::segList(int segmentSize, int uSize, int idleTime) {
   unitSize= uSize;
@@ -48,30 +69,50 @@ segList::segList(int segmentSize, int uSize, int idleTime) {
   first= last= null;
   nrNodes= 0;
 
-  addSegment();         // create the first memory segment - there is always 1, never 0
+  addSegment();         // create the first memory segment - there is 1 at start; if delData is called, it will be reallocated if a new member is added
+
+  /// add this segList to the chainList with all segLists
+  _ALLsegsData *p= new _ALLsegsData;
+  p->list= this;
+  _ALLsegs.add(p);
 }
 
+
 segList::~segList() {
+  /// remove this list from the chainList with all created segLists
+  _ALLsegsData *p= (_ALLsegsData *)_ALLsegs.first;
+  while(p)
+    if(p->list== this)
+      break;
+  
+  if(p) _ALLsegs.del(p);
+
   delData();
 }
 
+
 void segList::delData() {
+  /// delete list members
+  while(first)
+    del(first);
+
+  /// dealloc memory
   while(seg.nrNodes)
     removeSegment();
-
-  nrNodes= 0;
-  first= last= null;
-  unitSize= 0;
-  segSize= 0;
 }
 
-// MEMORY ALLOC/ DEALLOC FUNCS
+
+
+///---------------------------///
+// MEMORY ALLOC/ DEALLOC funcs //
+///---------------------------///
+
 void segList::addSegment() {
-  segment *p= new segment;
+  _segment *p= new _segment;
   p->data= new char[unitSize* segSize];
   p->freeSpc= new void*[segSize];
 
-/// set free space to point to the data allocated
+  /// set free space to point to the data allocated
   for(int a= 0; a< segSize; a++)
      p->freeSpc[a]= (char*)p->data+ a* unitSize;
 
@@ -80,157 +121,157 @@ void segList::addSegment() {
   seg.add((chainData*)p);
 }
 
+
 void segList::removeSegment() {
   seg.del(seg.last);
 }
 
 
-// ADD NODE funcs
+
+///--------------///
+// ADD NODE funcs //
+///--------------///
+
 segData *segList::add() {
-  segData *p= last;
-  segData *ref= null;
-  segment *b= (segment*)seg.first;
-
-/// find a free segment unit(segData) space
-  for(int a= 0; b; a++, b= (segment*)b->next) /// pass thru all the segments (should be few segments, else the search time gets big)
-    if(b->freeSpcPeak) {
-      ref= (segData*)b->freeSpc[b->freeSpcPeak- 1];
-      ref->segment= a;
-      b->freeSpcPeak--;
-      b->timeIdle= 0;                         /// set timeIdle to 0, signifying segment is used
-      break;
-    }
-
-/// not found? alloc mem for another segment
-  if(!ref) {
-    addSegment();
-    b= (segment*)seg.last;
-    ref= (segData*) b->freeSpc[b->freeSpcPeak- 1];
-    ref->segment= seg.nrNodes- 1; /// last segment
-    b->freeSpcPeak--;
-  }
-
-/// do the next/prev link
-  if(p) {
-    p->next= ref;
-    ref->prev= p;
-    last= ref;
-  } else {
-    first= last= ref;
-    ref->next= null;    /// keep this init here, if a constructor is used, it wont be called by derived class
-    ref->prev= null;    /// ^^^
-  }
-
-  nrNodes++;
-  return ref;
-}
-
-segData *segList::addFirst() {
-  segData *p= first;
   segData *ret= null;
-  segment *b= (segment*)seg.first;
+  _segment *s= (_segment*)seg.first;
 
-/// find a free segment unit(segData) space
-  for(int a= 0; b; a++, b= (segment*)b->next) /// pass thru all the segments (should be few segments, else the search time gets big)
-    if(b->freeSpcPeak) {
-      ret= (segData*)b->freeSpc[b->freeSpcPeak- 1];
-      ret->segment= a;
-      b->freeSpcPeak--;
-      b->timeIdle= 0;                         /// set timeIdle to 0, signifying segment is used
-      break;
-    }
+  /// find a free segment unit(segData) space
+  while(s) {
+    if(s->freeSpcPeak)  break;            // found
+    s= (_segment *)s->next;
+  }
 
-/// not found? alloc mem for another segment
+  /// not found? alloc mem for another segment
   if(!ret) {
     addSegment();
-    b= (segment*)seg.last;
-    ret= (segData*) b->freeSpc[b->freeSpcPeak- 1];
-    ret->segment= seg.nrNodes- 1;
-    b->freeSpcPeak--;
+    s= (_segment*)seg.last;
   }
 
-/// do the next/prev linking
-  if(p) {
-    p->prev= ret;
-    ret->next= p;
-    first= ret;
-    ret->prev= null;
+  ret= (segData *)s->freeSpc[s->freeSpcPeak- 1];    /// 'alloc' mem
+  ret->seg= s;                            /// ret's segment
+  s->freeSpcPeak--;                       /// decrease peak; when 0, segment is full
+  s->timeIdle= 0;                         /// set timeIdle to 0, signifying segment is used
+
+  /// do the next/prev link
+  if(last) {
+    last->next= ret;
+    ret->prev= last;
+    ret->next= null;
+    last= ret;
   } else {
     first= last= ret;
-    ret->next= null;
-    ret->prev= null;
+    ret->next= ret->prev= null; /// keep this init here, if a constructor is used, it wont be called by derived class
   }
 
   nrNodes++;
   return ret;
 }
 
-// DEL NODE FUNCS
 
-/// fast function
+
+segData *segList::addFirst() {
+  segData *ret= null;
+  _segment *s= (_segment*)seg.first;
+
+  /// find a free segment unit(segData) space
+  while(s) {
+    if(s->freeSpcPeak) break;               // found
+    s= (_segment *)s->next;
+  }
+
+  /// not found? alloc mem for another segment
+  if(!s) {
+    addSegment();
+    s= (_segment*)seg.last;
+  }
+
+  ret= (segData *)s->freeSpc[s->freeSpcPeak- 1];    /// 'alloc' mem
+  ret->seg= s;                            /// ret's segment
+  s->freeSpcPeak--;                       /// decrease peak; when 0, segment is full
+  s->timeIdle= 0;                         /// set timeIdle to 0, signifying segment is used
+
+  /// do the next/prev linking
+  if(first) {
+    first->prev= ret;
+    ret->next= first;
+    ret->prev= null;
+    first= ret;
+  } else {
+    first= last= ret;
+    ret->next= ret->prev= null;
+  }
+
+  nrNodes++;
+  return ret;
+}
+
+
+
+///--------------///
+// DEL NODE FUNCS //
+///--------------///
+
+// fast function
 void segList::del(segData *p) {	
-#ifdef CHAINLIST_SAFECHECKS
+  #ifdef CHAINLIST_SAFECHECKS
   if((!nrNodes) || (!p))
     return;
-#endif
-/// set the next / prev link
+  #endif
+
+  /// set the next / prev link
   if(p->prev) p->prev->next= p->next;
   if(p->next) p->next->prev= p->prev;
   if(p== first) first= p->next;
   if(p== last) last= p->prev;
 
- /// find the segment it belongs to
-  segment *b= (segment *)seg.first;
-
-  for(int a= 0; a< p->segment; a++)
-    b= (segment *)b->next;
-
-/// 'free' the space it used
-  b->freeSpc[b->freeSpcPeak]= p;
-  b->freeSpcPeak++;
+  p->seg->freeSpc[p->seg->freeSpcPeak]= p;  /// mark memory as free
+  p->seg->freeSpcPeak++;                    /// increase the peak (if(peak == segmentSize) the whole segment is free)
 
   nrNodes--;
 }
+
 
 /// SLOW - goes thru the list, with many instructions per cicle (in a small list is ok)
 void segList::deli(int nr) {
-#ifdef CHAINLIST_SAFECHECKS
+  #ifdef CHAINLIST_SAFECHECKS
   if(!nrNodes) return;
   if(nr> nrNodes) return;
-#endif
+  #endif
 
-/// find the segment
+  /// find the member
   segData *p= first;
-  for(int a= 0; a< nr; a++)
+  for(int a= 0; a< nr; a++)      // <<< THIS PART COULD BE SLOW IN A BIG LIST >>>
     p= p->next;
-/// set the next-prev link
+
+  if(!p) return;                /// failsafe
+
+  /// set the next-prev link
   if(p->prev) p->prev->next= p->next;
   if(p->next) p->next->prev= p->prev;
   if(p== first) first= p->next;
   if(p== last) last= p->prev;
 
-/// find segment it belongs to
-  segment *b= (segment *)seg.first;
-  for(short a= 0; a< p->segment; a++)
-    b= (segment *)b->next;
-/// 'deallocate' itself from the segment
-  b->freeSpc[b->freeSpcPeak]= p;
-  b->freeSpcPeak++;
+  p->seg->freeSpc[p->seg->freeSpcPeak]= p;  /// mark memory as free
+  p->seg->freeSpcPeak++;                    /// increase the peak (if(peak == segmentSize) the whole segment is free)
 
   nrNodes--;
 }
+
+
 
 
 ///---------------------------------------------------------------///
 // GET - SEARCH list funcs - not to be used regulary or in a cycle //  
 ///---------------------------------------------------------------///
 
+
 /// get must be RARELY used: if one makes a for(a) { get(b)} it gets thru a*b times thru the list. if the list is 100000units.... do the math
 segData *segList::get(int nr) {
-#ifdef CHAINLIST_SAFECHECKS
+  #ifdef CHAINLIST_SAFECHECKS
   if(!nrNodes) return null;
   if(nr> nrNodes) return null;
-#endif
+  #endif
 
   segData *p= first;
   for(int a= 0; a< nr; a++)
@@ -238,6 +279,7 @@ segData *segList::get(int nr) {
 
   return p;
 }
+
 
 /// same as the get func, should be RARELY used
 int segList::search(segData *e) {
@@ -254,8 +296,8 @@ void segList::checkIdle() {
   if(seg.nrNodes == 1)    // it wont dealloc the first segment
     return;
   
-/// getting the present time
-  int present;
+  /// getting the present time
+  uint present;
   
   #ifdef OS_WIN
   present= GetTickCount();
@@ -277,29 +319,72 @@ void segList::checkIdle() {
   //clocks= mach_absolute_time();
 
   time= (mach_absolute_time()* machInfo.numer/ machInfo.denom)/ 1000000;
-  present= (int)time;
+  present= (uint)time;
   #endif /// OS_MAC
   
-  segment *p= (segment*)seg.first->next;              /// ignore the first
-  segment *t;
+  _segment *p= null, *t;
+
+  if(seg.first)                     /// ignore the first segment (if there is one)
+    p= (_segment *)seg.first->next;
 
   while(p)
-    if(p->freeSpcPeak == segSize) {                   // if all space is free
+    if(p->freeSpcPeak == segSize) {                    // if all space is free
       if(p->timeIdle) {                               /// check if the idle timer was started
         if((present- p->timeIdle)> timeMaxIdle) {     /// check difference between present-idle start time
           t= p;
-          p= (segment *)p->next;
+          p= (_segment *)p->next;
           seg.del(t);
         }
       } else {                                        /// if all space is free, start the idle timer
         p->timeIdle= present;
-        p= (segment*)p->next;		
+        p= (_segment*)p->next;		
       }
-    }	else {                                          // else the segment is in use / check next
+    }	else {                                           // else the segment is in use / check next
       p->timeIdle= 0;                                 /// assure the idle timer is not used
-      p= (segment*)p->next;
+      p= (_segment*)p->next;
     }
 }
+
+
+/// deletes all segments that are empty; 
+void segList::delEmptySegments() {
+  _segment *p= null, *t;
+  if(seg.first)                     /// ignores the first segment (if there is one)
+    p= (_segment*)seg.first->next;
+
+  while(p)
+    if(p->freeSpcPeak == segSize) { /// if the segment is empty
+      t= p;
+      p= (_segment *)p->next;
+      seg.del(t);                    // delete it
+    }
+}
+
+
+
+///--------------------------------------------///
+// funcs that will work on ALL CREATED segLists //
+///--------------------------------------------///
+
+
+// checks ALL created segLists for idle segments; can be VERY SLOW if many lists are created; use rarely!!!!
+void checkIdleALL() {
+  _ALLsegsData *p= (_ALLsegsData *)_ALLsegs.first;
+  while(p)
+    p->list->checkIdle();
+}
+
+// same as delEmptySegments() but for ALL segLists that were created; basically a garbage collector
+void delEmptySegmentsALL() {
+  _ALLsegsData *p= (_ALLsegsData *)_ALLsegs.first;
+  while(p)
+    p->list->delEmptySegments();
+}
+
+
+
+
+
 
 
 

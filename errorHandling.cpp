@@ -1,25 +1,47 @@
-#include "pch.h"     // <--- if using precompiled
 
-#ifdef OS_WIN                       // <--- if not using precompiled
+
+#ifdef _WIN32
+#define OS_WIN
+#define USING_DIRECTINPUT
 #include <windows.h>
+
+//#define USING_DIRECTINPUT     // << DISABLE / ENABLE
+
+
+#ifdef USING_DIRECTINPUT
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#endif
 #endif /// OS_WIN
 
-#ifdef OS_LINUX
+#ifdef __linux__
+#define OS_LINUX
 #include <X11/Xlib.h>
 #endif /// OS_LINUX
+
+#define USING_OPENGL
+#ifdef USING_OPENGL
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else /// OS_WIN + OS_LINUX
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif 
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
 #include "typeShortcuts.h"
-#include "stringClass32.h"
-#include "errorHandling.h"    // <--- ^^^
+#include "stringClass8.h"
+#include "errorHandling.h"
 
 
-#ifdef USING_CONSOLE
+#ifdef USING_CONSOLE          // project defined
 #include "Console.h"
-extern Console console;	// must be declared in main program, if used
+extern Console console;
 #endif
 
 
@@ -97,6 +119,7 @@ void ErrorHandling::window(string8 txt, bool exit, void (*exitFunc)(void)) {
 
 
 #ifdef OS_MAC
+  MUST MAKE THIS
   //return;
 #endif ///OS_MAC
   printf("no OS defined\n");
@@ -207,7 +230,7 @@ void ErrorHandling::messageBox(string8 text) {
 
 #ifdef USING_DIRECTINPUT
 void ErrorHandling::dinput(long n) {
-  string s;
+  string8 s;
   switch(n) {
     case S_FALSE:                   { s= "S_FALSE: DI_BUFFEROVERFLOW: The device buffer overflowed and some input was lost.\nDI_NOEFFECT: The operation had no effect.\nDI_NOTATTACHED: The device exists but is not currently attached to the user's computer.\nDI_PROPNOEFFECT: The change in device properties had no effect."; break; }
     case DI_DOWNLOADSKIPPED:        { s= "DI_DOWNLOADSKIPPED: The parameters of the effect were successfully updated,\nbut the effect could not be downloaded because the associated device\nwas not acquired in exclusive mode."; break; }
@@ -261,6 +284,35 @@ void ErrorHandling::dinput(long n) {
   simple(s);
 }
 #endif /// USING_DIRECTINPUT
+
+
+
+#ifdef USING_OPENGL
+int ErrorHandling::glError(cchar *text) {
+  int ret= glGetError();
+  if(!ret) return 0;        // fast return if no error
+
+  if(ret== GL_INVALID_ENUM)
+    simple(text? string8(text)+ " GL ERROR: GL_INVALID_ENUM": "OpenGL ERROR: GL_INVALID_ENUM");
+  else if(ret== GL_INVALID_VALUE)
+    simple(text? string8(text)+ " GL ERROR: GL_INVALID_VALUE": "OpenGL ERROR: GL_INVALID_VALUE");
+  else if(ret== GL_INVALID_OPERATION)
+    simple(text? string8(text)+ " GL ERROR: GL_INVALID_OPERATION": "OpenGL ERROR: GL_INVALID_OPERATION");
+  else if(ret== GL_OUT_OF_MEMORY)
+    simple(text? string8(text)+ " GL ERROR: GL_OUT_OF_MEMORY": "OpenGL ERROR: GL_OUT_OF_MEMORY");
+  else if(ret== GL_STACK_UNDERFLOW)
+    simple(text? string8(text)+ " GL ERROR: GL_STACK_UNDERFLOW": "OpenGL ERROR: GL_STACK_UNDERFLOW");
+  else if(ret== GL_STACK_OVERFLOW)
+    simple(text? string8(text)+ " GL ERROR: GL_STACK_OVERFLOW": "OpenGL ERROR: GL_STACK_OVERFLOW");
+
+  return ret;  
+}
+#endif /// USING_OPENGL
+
+
+
+
+
 
 
 
