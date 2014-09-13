@@ -15,11 +15,13 @@ chainData::~chainData() {
 // chainList class //
 ///---------------///
 
+
 chainList::chainList() {
   first= null;
   last= null;
   nrNodes= 0;
 }
+
 
 chainList::~chainList() {
   delData();
