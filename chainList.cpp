@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "typeShortcuts.h"
-#include "chainlist.h"
+#include "chainList.h"
 //#define CHAINLIST_SAFECHECKS 1 //to check for bad calls to chainList
 
 ///---------------///

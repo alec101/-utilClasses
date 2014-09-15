@@ -93,7 +93,7 @@ char fBuf[2048];
 /// character case change helper structs (initialized at the back of the file)
 struct _L2U {
   ulong l, u;
-} _cl2u[], _cu2l[];
+};// _cl2u[], _cu2l[];
 
 
 string8 &string8::f(const char *format, ...) {
