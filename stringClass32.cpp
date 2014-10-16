@@ -617,7 +617,7 @@ size_t string32::strchars8(const char *s) const {
   return l;
 }
 
-
+// counts the number of comb caracters in a utf-8 string
 size_t string32::strcombs8(cchar *s) const {        // <---------------------------------------------------------------------
   size_t ret= 0;
   cuchar *p= (cuchar *)s;
