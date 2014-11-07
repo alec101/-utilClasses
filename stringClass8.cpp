@@ -196,34 +196,34 @@ string8 &string8::operator=(const ulong *s) {
 
   for(size_t a= 0; a< nrchars; a++) // for each character in s
     if(s[a]<= 0x0000007F) {         //  1 byte   U-00000000�U-0000007F:  0xxxxxxx 
-      *p++=   s[a];
+      *p++= (uchar) s[a];
     } else if(s[a]<= 0x000007FF) {  //  2 bytes  U-00000080�U-000007FF:  110xxxxx 10xxxxxx 
-      *p++=  (s[a]>> 6)        | 0xC0;          /// [BYTE 1]       >> 6= 000xxxxx 00000000  then header | c0 (11000000)
-      *p++=  (s[a]&       0x3f)| 0x80;          /// [BYTE 2]         3f= 00000000 00xxxxxx  then header | 80 (10000000)
+      *p++= (uchar) (s[a]>> 6)        | 0xC0;   /// [BYTE 1]       >> 6= 000xxxxx 00000000  then header | c0 (11000000)
+      *p++= (uchar) (s[a]&       0x3f)| 0x80;   /// [BYTE 2]         3f= 00000000 00xxxxxx  then header | 80 (10000000)
     } else if(s[a]<= 0x0000FFFF) {  //  3 bytes  U-00000800�U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx 
-      *p++=  (s[a]>> 12)       | 0xE0;          /// [BYTE 1]      >> 12= 0000xxxx 00000000 00000000  then header | e0 (11100000)
-      *p++= ((s[a]>> 6)&  0x3F)| 0x80;          /// [BYTE 2]  >> 6 & 3f= 00000000 00xxxxxx 00000000  then header | 80 (10000000)
-      *p++=  (s[a]&       0x3F)| 0x80;          /// [BYTE 3]       & 3f= 00000000 00000000 00xxxxxx  then header | 80 (10000000)
+      *p++= (uchar) (s[a]>> 12)       | 0xE0;   /// [BYTE 1]      >> 12= 0000xxxx 00000000 00000000  then header | e0 (11100000)
+      *p++= (uchar)((s[a]>> 6)&  0x3F)| 0x80;   /// [BYTE 2]  >> 6 & 3f= 00000000 00xxxxxx 00000000  then header | 80 (10000000)
+      *p++= (uchar) (s[a]&       0x3F)| 0x80;   /// [BYTE 3]       & 3f= 00000000 00000000 00xxxxxx  then header | 80 (10000000)
     } else if(s[a]<= 0x001FFFFF) {	//  4 bytes	U-00010000�U-001FFFFF:   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx 
-      *p++=  (s[a]>> 18)       | 0xF0;          /// [BYTE 1]      >> 18= 00000xxx 00000000 00000000 00000000  then header | f0 (11110000)
-      *p++= ((s[a]>> 12)& 0x3F)| 0x80;          /// [BYTE 2] >> 12 & 3f= 00000000 00xxxxxx 00000000 00000000  then header | 80 (10000000)
-      *p++= ((s[a]>>  6)& 0x3F)| 0x80;          /// [BYTE 3] >>  6 & 3f= 00000000 00000000 00xxxxxx 00000000  then header | 80 (10000000)
-      *p++=  (s[a]&       0x3F)| 0x80;          /// [BYTE 4]       & 3f= 00000000 00000000 00000000 00xxxxxx  then header | 80 (10000000)
+      *p++= (uchar) (s[a]>> 18)       | 0xF0;   /// [BYTE 1]      >> 18= 00000xxx 00000000 00000000 00000000  then header | f0 (11110000)
+      *p++= (uchar)((s[a]>> 12)& 0x3F)| 0x80;   /// [BYTE 2] >> 12 & 3f= 00000000 00xxxxxx 00000000 00000000  then header | 80 (10000000)
+      *p++= (uchar)((s[a]>>  6)& 0x3F)| 0x80;   /// [BYTE 3] >>  6 & 3f= 00000000 00000000 00xxxxxx 00000000  then header | 80 (10000000)
+      *p++= (uchar) (s[a]&       0x3F)| 0x80;   /// [BYTE 4]       & 3f= 00000000 00000000 00000000 00xxxxxx  then header | 80 (10000000)
 
 // last 2 bytes, UNUSED by utf ATM, but there be the code
     } else if(s[a]<= 0x03FFFFFF) {  //  5 bytes U-00200000�U-03FFFFFF:   111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 
-      *p++=  (s[a]>> 24)       | 0xF8;          /// [BYTE 1]      >> 24= 000000xx 00000000 00000000 00000000 00000000  then header | f8 (11111000)
-      *p++= ((s[a]>> 18)& 0x3f)| 0x80;          /// [BYTE 2] >> 18 & 3f= 00000000 00xxxxxx 00000000 00000000 00000000  then header | 80 (10000000)
-      *p++= ((s[a]>> 12)& 0x3f)| 0x80;          /// [BYTE 3] >> 12 & 3f= 00000000 00000000 00xxxxxx 00000000 00000000  then header | 80 (10000000)
-      *p++= ((s[a]>>  6)& 0x3f)| 0x80;          /// [BYTE 4] >>  6 & 3f= 00000000 00000000 00000000 00xxxxxx 00000000  then header | 80 (10000000)
-      *p++=  (s[a]&       0x3f)| 0x80;          /// [BYTE 5]       & 3f= 00000000 00000000 00000000 00000000 00xxxxxx  then header | 80 (10000000)
+      *p++= (uchar) (s[a]>> 24)       | 0xF8;   /// [BYTE 1]      >> 24= 000000xx 00000000 00000000 00000000 00000000  then header | f8 (11111000)
+      *p++= (uchar)((s[a]>> 18)& 0x3f)| 0x80;   /// [BYTE 2] >> 18 & 3f= 00000000 00xxxxxx 00000000 00000000 00000000  then header | 80 (10000000)
+      *p++= (uchar)((s[a]>> 12)& 0x3f)| 0x80;   /// [BYTE 3] >> 12 & 3f= 00000000 00000000 00xxxxxx 00000000 00000000  then header | 80 (10000000)
+      *p++= (uchar)((s[a]>>  6)& 0x3f)| 0x80;   /// [BYTE 4] >>  6 & 3f= 00000000 00000000 00000000 00xxxxxx 00000000  then header | 80 (10000000)
+      *p++= (uchar) (s[a]&       0x3f)| 0x80;   /// [BYTE 5]       & 3f= 00000000 00000000 00000000 00000000 00xxxxxx  then header | 80 (10000000)
     } else if(s[a]<= 0x7FFFFFFF) {  //  6 bytes U-04000000�U-7FFFFFFF:   1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-      *p++=  (s[a]>> 30)       | 0xFC;          /// [BYTE 1]      >> 30= 0000000x 00000000 00000000 00000000 00000000 00000000  then header | fc (11111100)
-      *p++= ((s[a]>> 24)& 0x3f)| 0x80;          /// [BYTE 2] >> 24 & 3f= 00000000 00xxxxxx 00000000 00000000 00000000 00000000  then header | 80 (10000000)
-      *p++= ((s[a]>> 18)& 0x3f)| 0x80;          /// [BYTE 3] >> 18 & 3f= 00000000 00000000 00xxxxxx 00000000 00000000 00000000  then header | 80 (10000000)
-      *p++= ((s[a]>> 12)& 0x3f)| 0x80;          /// [BYTE 4] >> 12 & 3f= 00000000 00000000 00000000 00xxxxxx 00000000 00000000  then header | 80 (10000000)
-      *p++= ((s[a]>>  6)& 0x3f)| 0x80;          /// [BYTE 5] >>  6 & 3f= 00000000 00000000 00000000 00000000 00xxxxxx 00000000  then header | 80 (10000000)
-      *p++=  (s[a]&       0x3f)| 0x80;          /// [BYTE 6]         3f= 00000000 00000000 00000000 00000000 00000000 00xxxxxx  then header | 80 (10000000)
+      *p++= (uchar) (s[a]>> 30)       | 0xFC;   /// [BYTE 1]      >> 30= 0000000x 00000000 00000000 00000000 00000000 00000000  then header | fc (11111100)
+      *p++= (uchar)((s[a]>> 24)& 0x3f)| 0x80;   /// [BYTE 2] >> 24 & 3f= 00000000 00xxxxxx 00000000 00000000 00000000 00000000  then header | 80 (10000000)
+      *p++= (uchar)((s[a]>> 18)& 0x3f)| 0x80;   /// [BYTE 3] >> 18 & 3f= 00000000 00000000 00xxxxxx 00000000 00000000 00000000  then header | 80 (10000000)
+      *p++= (uchar)((s[a]>> 12)& 0x3f)| 0x80;   /// [BYTE 4] >> 12 & 3f= 00000000 00000000 00000000 00xxxxxx 00000000 00000000  then header | 80 (10000000)
+      *p++= (uchar)((s[a]>>  6)& 0x3f)| 0x80;   /// [BYTE 5] >>  6 & 3f= 00000000 00000000 00000000 00000000 00xxxxxx 00000000  then header | 80 (10000000)
+      *p++= (uchar) (s[a]&       0x3f)| 0x80;   /// [BYTE 6]         3f= 00000000 00000000 00000000 00000000 00000000 00xxxxxx  then header | 80 (10000000)
     }
   *p= 0;                                        // string terminator
 
@@ -248,15 +248,15 @@ string8 &string8::operator=(const ushort *s) {
   uchar *p= (uchar *)d;
 
   for(size_t a= 0; a< nrchars; a++)// for each character in s
-    if(s[a]<= 0x007F) {         //  1 byte   U-00000000�U-0000007F:  0xxxxxxx 
-      *p++=   s[a];
-    } else if(s[a]<= 0x07FF) {  //  2 bytes  U-00000080�U-000007FF:  110xxxxx 10xxxxxx 
-      *p++=  (s[a]>> 6)        | 0xC0;      /// [BYTE 1]       >> 6= 000xxxxx 00000000  then header | c0 (11000000)
-      *p++=  (s[a]&       0x3f)| 0x80;      /// [BYTE 2]         3f= 00000000 00xxxxxx  then header | 80 (10000000)
-    } else if(s[a]<= 0xFFFF) {  //  3 bytes  U-00000800�U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx 
-      *p++=  (s[a]>> 12)       | 0xE0;      /// [BYTE 1]      >> 12= 0000xxxx 00000000 00000000  then header | e0 (11100000)
-      *p++= ((s[a]>> 6)&  0x3F)| 0x80;      /// [BYTE 2]  >> 6 & 3f= 00000000 00xxxxxx 00000000  then header | 80 (10000000)
-      *p++=  (s[a]&       0x3F)| 0x80;      /// [BYTE 3]       & 3f= 00000000 00000000 00xxxxxx  then header | 80 (10000000)
+    if(s[a]<= 0x007F) {            // 1 byte   U-00000000�U-0000007F:  0xxxxxxx 
+      *p++= (uchar)  s[a];
+    } else if(s[a]<= 0x07FF) {     // 2 bytes  U-00000080�U-000007FF:  110xxxxx 10xxxxxx 
+      *p++= (uchar) (s[a]>> 6)        | 0xC0; /// [BYTE 1]       >> 6= 000xxxxx 00000000  then header | c0 (11000000)
+      *p++= (uchar) (s[a]&       0x3f)| 0x80; /// [BYTE 2]         3f= 00000000 00xxxxxx  then header | 80 (10000000)
+    } else if(s[a]<= 0xFFFF) {     // 3 bytes  U-00000800�U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx 
+      *p++= (uchar) (s[a]>> 12)       | 0xE0; /// [BYTE 1]      >> 12= 0000xxxx 00000000 00000000  then header | e0 (11100000)
+      *p++= (uchar)((s[a]>> 6)&  0x3F)| 0x80; /// [BYTE 2]  >> 6 & 3f= 00000000 00xxxxxx 00000000  then header | 80 (10000000)
+      *p++= (uchar) (s[a]&       0x3F)| 0x80; /// [BYTE 3]       & 3f= 00000000 00000000 00xxxxxx  then header | 80 (10000000)
     }
   *p= 0;                                    // string terminator
 
@@ -668,6 +668,16 @@ size_t string8::strlenWin(const ushort *s) {
   const ushort *p= s;
   while(*p++);
   return p- s- 1;
+}
+
+void string8::strcpy(char *dst, cchar *src) {
+  for(size_t a= 0; a< strlen(src); a++)
+    dst[a]= src[a];
+}
+
+void string8::strncpy(char *dst, cchar *src, uint n) {
+  for(uint a= 0; a< n; a++)
+    dst[a]= src[a];
 }
 
 // counts the number of characters in a utf-8 string8 (totals - both chars and combs)

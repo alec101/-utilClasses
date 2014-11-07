@@ -80,7 +80,8 @@ public:
   static size_t strlen32(const ulong *);       /// size in longs  (same as nr of chars)
   static size_t strchars(const char *);        /// nr chars in an UTF-8 string (WITH combining diacriticals)
   static size_t strcombs(const char *);        /// nr combining diacriticals in an UTF-8 string
-  static void strncpy(cchar* dst, cchar *src, uint); /// copies n chars from src to dst, 
+  static void strncpy(char *dst, cchar *src, uint); /// copies n chars from src to dst, 
+  static void strcpy(char *dst, cchar *src);   /// copies src to dst; dst must be prealocated
   static ulong utf8to32(const char *);         /// returns character as utf-32
   static ulong utf8to32n(const char *, int);   /// returns n-th character as utf-32
   static size_t strcmp(cchar *, cchar *);      /// compares two strings, returns 0 if identical or <0 if str1 is less than str2, and viceversa

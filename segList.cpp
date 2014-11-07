@@ -84,6 +84,8 @@ segList::~segList() {
   while(p)
     if(p->list== this)
       break;
+    else
+      p= (_ALLsegsData *)p->next;
   
   if(p) _ALLsegs.del(p);
 
